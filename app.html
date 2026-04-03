@@ -10,28 +10,49 @@
   </head>
   <body class="app-body">
 
-    <!-- App Header -->
-    <header class="app-header" role="banner">
-      <div class="app-header__inner">
-        <a href="index.html" class="logo" aria-label="Finance Manager – Retour à l'accueil">
-          <svg class="logo__icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-            <circle cx="16" cy="16" r="16" fill="#2563eb"/>
-            <text x="16" y="21" font-size="14" font-family="sans-serif" font-weight="bold" fill="white" text-anchor="middle">€</text>
-          </svg>
-          <span class="logo__text">Finance Manager</span>
-        </a>
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" hidden aria-hidden="true"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+      <div class="sidebar__logo">
+        <svg class="sidebar__logo-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <circle cx="16" cy="16" r="16" fill="#6366f1"/>
+          <text x="16" y="21" font-size="14" font-family="sans-serif" font-weight="bold" fill="white" text-anchor="middle">€</text>
+        </svg>
+        <span class="sidebar__logo-text">FinanceManager</span>
       </div>
-    </header>
+      <nav id="tab-nav" class="sidebar__nav" role="navigation" aria-label="Menu principal"></nav>
+    </aside>
 
-    <!-- Tab Navigation -->
-    <nav class="tab-nav" id="tab-nav" role="tablist" aria-label="Navigation de l'application">
-      <!-- Filled by app.js -->
-    </nav>
+    <!-- App Content -->
+    <div class="app-wrapper">
 
-    <!-- Main Content -->
-    <main class="app-main" id="app-main" tabindex="-1">
-      <!-- Panels filled by app.js -->
-    </main>
+      <!-- Header -->
+      <header class="app-header" role="banner">
+        <div class="app-header__left">
+          <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
+          <h1 class="app-header__title" id="page-title">Tableau de bord</h1>
+        </div>
+        <div class="app-header__right">
+          <span class="app-header__date" id="header-date"></span>
+          <button class="btn btn--auto">Auto</button>
+          <div class="user-avatar" role="img" aria-label="Profil utilisateur">
+            <span aria-hidden="true">A</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="app-main" id="app-main" tabindex="-1"></main>
+
+    </div>
 
     <!-- Modal Overlay -->
     <div id="modal-overlay" class="modal-overlay" hidden aria-hidden="true">

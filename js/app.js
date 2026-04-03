@@ -143,12 +143,12 @@ let activeTab = 'dashboard';
 
 const TABS = [
   { id: 'dashboard',  label: 'Tableau de bord', icon: iconDashboard  },
-  { id: 'accounts',   label: 'Comptes',          icon: iconAccounts   },
   { id: 'expenses',   label: 'Dépenses',         icon: iconExpenses   },
   { id: 'incomes',    label: 'Revenus',          icon: iconIncomes    },
   { id: 'categories', label: 'Catégories',       icon: iconCategories },
   { id: 'budgets',    label: 'Budgets',          icon: iconBudgets    },
-  { id: 'forecast',   label: 'Prévisionnel',     icon: iconForecast   },
+  { id: 'forecast',   label: 'Calculateur',      icon: iconForecast   },
+  { id: 'accounts',   label: 'Patrimoine',       icon: iconAccounts   },
   { id: 'settings',   label: 'Paramètres',       icon: iconSettings   },
 ];
 
@@ -156,30 +156,37 @@ function buildTabNav() {
   const nav = document.getElementById('tab-nav');
   nav.innerHTML = TABS.map(t => `
     <button
-      class="tab-btn${t.id === activeTab ? ' tab-btn--active' : ''}"
-      role="tab"
-      aria-selected="${t.id === activeTab}"
-      aria-controls="panel-${t.id}"
-      id="tab-${t.id}"
+      class="nav-item${t.id === activeTab ? ' nav-item--active' : ''}"
+      aria-current="${t.id === activeTab ? 'page' : 'false'}"
       data-tab="${t.id}"
-    >${t.icon()}<span class="tab-btn__label">${escHtml(t.label)}</span></button>
+    >${t.icon()}<span class="nav-item__label">${escHtml(t.label)}</span></button>
   `).join('');
 
-  nav.querySelectorAll('.tab-btn').forEach(btn => {
+  nav.querySelectorAll('.nav-item').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 }
 
 function switchTab(tabId) {
   activeTab = tabId;
-  document.querySelectorAll('.tab-btn').forEach(btn => {
+  document.querySelectorAll('.nav-item').forEach(btn => {
     const active = btn.dataset.tab === tabId;
-    btn.classList.toggle('tab-btn--active', active);
-    btn.setAttribute('aria-selected', String(active));
+    btn.classList.toggle('nav-item--active', active);
+    btn.setAttribute('aria-current', active ? 'page' : 'false');
   });
-  // Scroll active tab into view
-  const activeBtn = document.getElementById('tab-' + tabId);
-  if (activeBtn) activeBtn.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+  // Update header title
+  const tab = TABS.find(t => t.id === tabId);
+  const titleEl = document.getElementById('page-title');
+  if (tab && titleEl) titleEl.textContent = tab.label;
+  // Close sidebar on mobile after navigation
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const toggle  = document.getElementById('sidebar-toggle');
+  if (sidebar && sidebar.classList.contains('sidebar--open')) {
+    sidebar.classList.remove('sidebar--open');
+    if (overlay) { overlay.hidden = true; overlay.setAttribute('aria-hidden', 'true'); }
+    if (toggle)  toggle.setAttribute('aria-expanded', 'false');
+  }
   renderActivePanel();
 }
 
@@ -307,9 +314,9 @@ function buildBarChart(expByCat, categories) {
     const y     = i * (rowH + gap);
     const midY  = y + rowH / 2;
     return `
-      <text x="${labelW - 8}" y="${midY + 5}" text-anchor="end" font-size="13" fill="#64748b" font-family="system-ui,sans-serif">${escHtml(name)}</text>
+      <text x="${labelW - 8}" y="${midY + 5}" text-anchor="end" font-size="13" fill="#94a3b8" font-family="system-ui,sans-serif">${escHtml(name)}</text>
       <rect x="${labelW}" y="${y}" width="${barW}" height="${rowH}" rx="5" fill="${escHtml(color)}" opacity="0.85"/>
-      <text x="${labelW + barW + 8}" y="${midY + 5}" font-size="13" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="600">${formatCurrency(val)}</text>`;
+      <text x="${labelW + barW + 8}" y="${midY + 5}" font-size="13" fill="#e2e8f0" font-family="system-ui,sans-serif" font-weight="600">${formatCurrency(val)}</text>`;
   }).join('');
 
   return `
@@ -426,31 +433,53 @@ function renderExpenses(panel) {
     </div>
     ${filtered.length === 0
       ? '<div class="empty-state"><p>Aucune dépense pour ce mois.</p></div>'
-      : `<ul class="item-list" role="list">
-          ${filtered.map(exp => {
-            const acc = accounts.find(a => a.id === exp.accountId);
-            const cat = categories.find(c => c.id === exp.categoryId);
-            return `
-              <li class="item-card">
-                <span class="item-card__dot" style="background:${escHtml(cat ? cat.color : '#64748b')}" aria-hidden="true"></span>
-                <div class="item-card__info">
-                  <span class="item-card__name">${escHtml(exp.label)}</span>
-                  <span class="item-card__meta">
-                    ${escHtml(cat ? cat.name : '—')} · ${escHtml(acc ? acc.name : '—')} · ${formatDate(exp.date)}
-                    ${exp.debited ? '<span class="badge badge--debited">Débité</span>' : ''}
-                  </span>
-                </div>
-                <span class="item-card__amount item-card__amount--expense">${formatCurrency(exp.amount)}</span>
-                <div class="item-card__actions">
-                  ${!exp.debited
-                    ? `<button class="btn btn--debit btn--sm" data-id="${escHtml(exp.id)}" aria-label="Débiter ${escHtml(exp.label)}">Débiter</button>`
-                    : ''}
-                  <button class="btn-icon btn-icon--edit" data-id="${escHtml(exp.id)}" aria-label="Modifier">${iconEdit()}</button>
-                  <button class="btn-icon btn-icon--delete" data-id="${escHtml(exp.id)}" aria-label="Supprimer">${iconDelete()}</button>
-                </div>
-              </li>`;
-          }).join('')}
-        </ul>`
+      : `<div class="table-wrapper">
+          <table class="data-table" aria-label="Liste des dépenses">
+            <thead>
+              <tr>
+                <th>NOM</th>
+                <th>CATÉGORIE</th>
+                <th>MONTANT</th>
+                <th>DATE</th>
+                <th>COMPTE</th>
+                <th>STATUT</th>
+                <th class="col-actions">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.map(exp => {
+                const acc = accounts.find(a => a.id === exp.accountId);
+                const cat = categories.find(c => c.id === exp.categoryId);
+                const catColor = cat ? cat.color : '#64748b';
+                const catBg = catColor + '28';
+                return `
+                  <tr>
+                    <td class="col-name">${escHtml(exp.label)}</td>
+                    <td>
+                      ${cat
+                        ? `<span class="cat-badge" style="background:${catBg};color:${escHtml(catColor)}">${escHtml(cat.name)}</span>`
+                        : '<span class="text-muted">—</span>'}
+                    </td>
+                    <td class="col-amount">${formatCurrency(exp.amount)}</td>
+                    <td class="text-muted">${formatDate(exp.date)}</td>
+                    <td class="text-muted">${escHtml(acc ? acc.name : '—')}</td>
+                    <td>
+                      ${exp.debited
+                        ? '<span class="status-badge status-badge--paid">Payé</span>'
+                        : '<span class="status-badge status-badge--pending">En attente</span>'}
+                    </td>
+                    <td class="col-actions">
+                      ${!exp.debited
+                        ? `<button class="btn btn--debit" data-id="${escHtml(exp.id)}" aria-label="Débiter ${escHtml(exp.label)}">Débiter</button>`
+                        : ''}
+                      <button class="btn-icon btn-icon--edit" data-id="${escHtml(exp.id)}" aria-label="Modifier">${iconEdit()}</button>
+                      <button class="btn-icon btn-icon--delete" data-id="${escHtml(exp.id)}" aria-label="Supprimer">${iconDelete()}</button>
+                    </td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`
     }`;
 
   panel.dataset.filterMonth = filterMonth;
@@ -581,31 +610,53 @@ function renderIncomes(panel) {
     </div>
     ${filtered.length === 0
       ? '<div class="empty-state"><p>Aucun revenu pour ce mois.</p></div>'
-      : `<ul class="item-list" role="list">
-          ${filtered.map(inc => {
-            const acc = accounts.find(a => a.id === inc.accountId);
-            const cat = categories.find(c => c.id === inc.categoryId);
-            return `
-              <li class="item-card">
-                <span class="item-card__dot" style="background:${escHtml(cat ? cat.color : '#64748b')}" aria-hidden="true"></span>
-                <div class="item-card__info">
-                  <span class="item-card__name">${escHtml(inc.label)}</span>
-                  <span class="item-card__meta">
-                    ${escHtml(cat ? cat.name : '—')} · ${escHtml(acc ? acc.name : '—')} · ${formatDate(inc.date)}
-                    ${inc.credited ? '<span class="badge badge--credited">Crédité</span>' : ''}
-                  </span>
-                </div>
-                <span class="item-card__amount item-card__amount--income">+${formatCurrency(inc.amount)}</span>
-                <div class="item-card__actions">
-                  ${!inc.credited
-                    ? `<button class="btn btn--credit btn--sm" data-id="${escHtml(inc.id)}" aria-label="Créditer ${escHtml(inc.label)}">Créditer</button>`
-                    : ''}
-                  <button class="btn-icon btn-icon--edit" data-id="${escHtml(inc.id)}" aria-label="Modifier">${iconEdit()}</button>
-                  <button class="btn-icon btn-icon--delete" data-id="${escHtml(inc.id)}" aria-label="Supprimer">${iconDelete()}</button>
-                </div>
-              </li>`;
-          }).join('')}
-        </ul>`
+      : `<div class="table-wrapper">
+          <table class="data-table" aria-label="Liste des revenus">
+            <thead>
+              <tr>
+                <th>NOM</th>
+                <th>CATÉGORIE</th>
+                <th>MONTANT</th>
+                <th>DATE</th>
+                <th>COMPTE</th>
+                <th>STATUT</th>
+                <th class="col-actions">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filtered.map(inc => {
+                const acc = accounts.find(a => a.id === inc.accountId);
+                const cat = categories.find(c => c.id === inc.categoryId);
+                const catColor = cat ? cat.color : '#64748b';
+                const catBg = catColor + '28';
+                return `
+                  <tr>
+                    <td class="col-name">${escHtml(inc.label)}</td>
+                    <td>
+                      ${cat
+                        ? `<span class="cat-badge" style="background:${catBg};color:${escHtml(catColor)}">${escHtml(cat.name)}</span>`
+                        : '<span class="text-muted">—</span>'}
+                    </td>
+                    <td class="col-amount col-amount--income">+${formatCurrency(inc.amount)}</td>
+                    <td class="text-muted">${formatDate(inc.date)}</td>
+                    <td class="text-muted">${escHtml(acc ? acc.name : '—')}</td>
+                    <td>
+                      ${inc.credited
+                        ? '<span class="status-badge status-badge--paid">Reçu</span>'
+                        : '<span class="status-badge status-badge--pending">En attente</span>'}
+                    </td>
+                    <td class="col-actions">
+                      ${!inc.credited
+                        ? `<button class="btn btn--credit" data-id="${escHtml(inc.id)}" aria-label="Créditer ${escHtml(inc.label)}">Créditer</button>`
+                        : ''}
+                      <button class="btn-icon btn-icon--edit" data-id="${escHtml(inc.id)}" aria-label="Modifier">${iconEdit()}</button>
+                      <button class="btn-icon btn-icon--delete" data-id="${escHtml(inc.id)}" aria-label="Supprimer">${iconDelete()}</button>
+                    </td>
+                  </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>`
     }`;
 
   panel.dataset.filterMonth = filterMonth;
@@ -725,19 +776,26 @@ function renderCategories(panel) {
     </div>
     ${categories.length === 0
       ? '<div class="empty-state"><p>Aucune catégorie.</p></div>'
-      : `<ul class="item-list" role="list">
-          ${categories.map(cat => `
-            <li class="item-card">
-              <span class="item-card__dot" style="background:${escHtml(cat.color)}" aria-hidden="true"></span>
-              <div class="item-card__info">
-                <span class="item-card__name">${escHtml(cat.name)}</span>
-              </div>
-              <div class="item-card__actions">
-                <button class="btn-icon btn-icon--edit" data-id="${escHtml(cat.id)}" aria-label="Modifier ${escHtml(cat.name)}">${iconEdit()}</button>
-                <button class="btn-icon btn-icon--delete" data-id="${escHtml(cat.id)}" aria-label="Supprimer ${escHtml(cat.name)}">${iconDelete()}</button>
-              </div>
-            </li>`).join('')}
-        </ul>`
+      : `<div class="cat-grid">
+          ${categories.map(cat => {
+            const expCount = getExpenses().filter(e => e.categoryId === cat.id).length;
+            const incCount = getIncomes().filter(i => i.categoryId === cat.id).length;
+            const total    = expCount + incCount;
+            const catBg    = cat.color + '28';
+            return `
+              <div class="cat-card">
+                <div class="cat-card__icon" style="background:${catBg}">
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${escHtml(cat.color)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </div>
+                <div class="cat-card__name">${escHtml(cat.name)}</div>
+                <div class="cat-card__count">${total} élément${total !== 1 ? 's' : ''}</div>
+                <div class="cat-card__actions">
+                  <button class="btn-icon btn-icon--edit" data-id="${escHtml(cat.id)}" aria-label="Modifier ${escHtml(cat.name)}">${iconEdit()}</button>
+                  <button class="btn-icon btn-icon--delete" data-id="${escHtml(cat.id)}" aria-label="Supprimer ${escHtml(cat.name)}">${iconDelete()}</button>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>`
     }`;
 
   panel.querySelector('#btn-add-cat').addEventListener('click', () => openCategoryForm());
@@ -807,26 +865,52 @@ function renderBudgets(panel) {
     </div>
     ${budgets.length === 0
       ? '<div class="empty-state"><p>Aucun budget défini. Créez des budgets par catégorie.</p></div>'
-      : `<ul class="item-list" role="list">
-          ${budgets.map(bud => {
-            const cat = categories.find(c => c.id === bud.categoryId);
-            return `
-              <li class="item-card">
-                <span class="item-card__dot" style="background:${escHtml(cat ? cat.color : '#64748b')}" aria-hidden="true"></span>
-                <div class="item-card__info">
-                  <span class="item-card__name">${escHtml(cat ? cat.name : '—')}</span>
-                  <span class="item-card__meta">
-                    ${bud.recurring ? '<span class="badge badge--recurring">Récurrent mensuel</span>' : 'Budget ponctuel'}
-                  </span>
-                </div>
-                <span class="item-card__amount">${formatCurrency(bud.amount)}</span>
-                <div class="item-card__actions">
-                  <button class="btn-icon btn-icon--edit" data-id="${escHtml(bud.id)}" aria-label="Modifier le budget">${iconEdit()}</button>
-                  <button class="btn-icon btn-icon--delete" data-id="${escHtml(bud.id)}" aria-label="Supprimer le budget">${iconDelete()}</button>
-                </div>
-              </li>`;
-          }).join('')}
-        </ul>`
+      : (() => {
+          const month = currentMonth();
+          const monthExpenses = getExpenses().filter(e => (e.date || '').startsWith(month));
+          return `<div class="budget-table">
+            ${budgets.map(bud => {
+              const cat     = categories.find(c => c.id === bud.categoryId);
+              const spent   = monthExpenses.filter(e => e.categoryId === bud.categoryId)
+                                           .reduce((s, e) => s + e.amount, 0);
+              const pct     = bud.amount > 0 ? Math.min(100, (spent / bud.amount) * 100) : 0;
+              const remain  = bud.amount - spent;
+              const fillClass = pct >= 100 ? 'progress-bar__fill--over'
+                              : pct >= 75  ? 'progress-bar__fill--warn'
+                              : 'progress-bar__fill--ok';
+              const catColor = cat ? cat.color : '#64748b';
+              return `
+                <div class="budget-row">
+                  <div class="budget-row__label">
+                    <div style="display:flex;align-items:center;gap:0.5rem">
+                      <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${escHtml(catColor)};flex-shrink:0"></span>
+                      <span class="budget-row__name">${escHtml(cat ? cat.name : '—')}</span>
+                      ${bud.recurring ? '<span class="badge badge--recurring" style="font-size:0.7rem">Mensuel</span>' : ''}
+                    </div>
+                    <div class="progress-bar" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100">
+                      <div class="progress-bar__fill ${fillClass}" style="width:${pct}%"></div>
+                    </div>
+                  </div>
+                  <div class="budget-row__stat">
+                    <span class="budget-row__stat-label">Budget</span>
+                    <span class="budget-row__stat-value">${formatCurrency(bud.amount)}</span>
+                  </div>
+                  <div class="budget-row__stat">
+                    <span class="budget-row__stat-label">Dépensé</span>
+                    <span class="budget-row__stat-value">${formatCurrency(spent)}</span>
+                  </div>
+                  <div class="budget-row__stat">
+                    <span class="budget-row__stat-label">Reste</span>
+                    <span class="budget-row__stat-value ${remain < 0 ? 'budget-row__stat-value--danger' : 'budget-row__stat-value--success'}">${formatCurrency(remain)}</span>
+                  </div>
+                  <div style="display:flex;gap:0.375rem;flex-shrink:0">
+                    <button class="btn-icon btn-icon--edit" data-id="${escHtml(bud.id)}" aria-label="Modifier le budget">${iconEdit()}</button>
+                    <button class="btn-icon btn-icon--delete" data-id="${escHtml(bud.id)}" aria-label="Supprimer le budget">${iconDelete()}</button>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>`;
+        })()
     }`;
 
   panel.querySelector('#btn-add-budget').addEventListener('click', () => openBudgetForm());
@@ -908,9 +992,31 @@ function renderForecast(panel) {
   const totalBalance   = accounts.reduce((s, a) => s + a.balance, 0);
   const month          = currentMonth();
 
+  const totalUnpaid = getExpenses().filter(e => !e.debited).reduce((s, e) => s + e.amount, 0);
+  const projBalance = totalBalance - totalRecurring;
+
   panel.innerHTML = `
     <div class="page-header">
-      <h1 class="page-title">Prévisionnel</h1>
+      <h1 class="page-title">Calculateur de liquidités</h1>
+    </div>
+
+    <div class="calc-summary">
+      <div class="calc-card calc-card--orange">
+        <span class="calc-card__label">Total impayés</span>
+        <span class="calc-card__value">${formatCurrency(totalUnpaid)}</span>
+      </div>
+      <div class="calc-card calc-card--green">
+        <span class="calc-card__label">Solde prévisionnel</span>
+        <span class="calc-card__value">${formatCurrency(projBalance)}</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-card__label">Solde actuel</span>
+        <span class="summary-card__value">${formatCurrency(totalBalance)}</span>
+      </div>
+      <div class="summary-card summary-card--expense">
+        <span class="summary-card__label">Charges récurrentes</span>
+        <span class="summary-card__value">${formatCurrency(totalRecurring)}</span>
+      </div>
     </div>
 
     ${recurring.length === 0 ? `
@@ -919,32 +1025,21 @@ function renderForecast(panel) {
         Créez des budgets avec l'option <strong>Récurrent mensuel</strong> pour visualiser vos projections.</p>
       </div>
     ` : `
-      <div class="summary-grid">
-        <div class="summary-card">
-          <span class="summary-card__label">Solde actuel</span>
-          <span class="summary-card__value">${formatCurrency(totalBalance)}</span>
-        </div>
-        <div class="summary-card summary-card--expense">
-          <span class="summary-card__label">Charges mensuelles</span>
-          <span class="summary-card__value">${formatCurrency(totalRecurring)}</span>
-        </div>
-      </div>
-
       <section class="section">
         <h2 class="section__title">Projections — 3 mois à venir</h2>
         <div class="forecast-grid">
           ${[1, 2, 3].map(n => {
-            const m            = addMonths(month, n);
-            const projBalance  = totalBalance - totalRecurring * n;
+            const m           = addMonths(month, n);
+            const projBal     = totalBalance - totalRecurring * n;
             return `
-              <div class="forecast-card${projBalance < 0 ? ' forecast-card--negative' : ''}">
+              <div class="forecast-card${projBal < 0 ? ' forecast-card--negative' : ''}">
                 <h3 class="forecast-card__month">${monthLabel(m)}</h3>
                 <ul class="forecast-card__list" role="list">
                   ${recurring.map(b => {
                     const cat = categories.find(c => c.id === b.categoryId);
                     return `
                       <li class="forecast-card__item">
-                        <span class="item-card__dot" style="background:${escHtml(cat ? cat.color : '#64748b')}" aria-hidden="true"></span>
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${escHtml(cat ? cat.color : '#64748b')}" aria-hidden="true"></span>
                         <span>${escHtml(cat ? cat.name : '—')}</span>
                         <span>${formatCurrency(b.amount)}</span>
                       </li>`;
@@ -956,7 +1051,7 @@ function renderForecast(panel) {
                 </div>
                 <div class="forecast-card__balance">
                   <span>Solde projeté</span>
-                  <strong class="${projBalance < 0 ? 'text-danger' : 'text-success'}">${formatCurrency(projBalance)}</strong>
+                  <strong class="${projBal < 0 ? 'text-danger' : 'text-success'}">${formatCurrency(projBal)}</strong>
                 </div>
               </div>`;
           }).join('')}
@@ -1119,11 +1214,43 @@ function init() {
       id="panel-${t.id}"
       class="tab-panel"
       role="tabpanel"
-      aria-labelledby="tab-${t.id}"
       ${t.id !== activeTab ? 'hidden aria-hidden="true"' : ''}
     ></section>`).join('');
 
   renderActivePanel();
+
+  // Header: display today's date
+  const dateEl = document.getElementById('header-date');
+  if (dateEl) {
+    dateEl.textContent = new Intl.DateTimeFormat('fr-FR', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    }).format(new Date());
+  }
+
+  // Sidebar toggle (mobile)
+  const sidebarToggle  = document.getElementById('sidebar-toggle');
+  const sidebar        = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+  if (sidebarToggle && sidebar) {
+    sidebarToggle.addEventListener('click', () => {
+      const open = sidebar.classList.toggle('sidebar--open');
+      sidebarToggle.setAttribute('aria-expanded', String(open));
+      if (sidebarOverlay) {
+        sidebarOverlay.hidden = !open;
+        sidebarOverlay.setAttribute('aria-hidden', String(!open));
+      }
+    });
+  }
+
+  if (sidebarOverlay && sidebar) {
+    sidebarOverlay.addEventListener('click', () => {
+      sidebar.classList.remove('sidebar--open');
+      if (sidebarToggle) sidebarToggle.setAttribute('aria-expanded', 'false');
+      sidebarOverlay.hidden = true;
+      sidebarOverlay.setAttribute('aria-hidden', 'true');
+    });
+  }
 
   // Modal: close on backdrop click
   document.getElementById('modal-overlay').addEventListener('click', e => {
