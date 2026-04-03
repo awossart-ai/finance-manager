@@ -1,13 +1,156 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FinanceManager</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Finance Manager – Gérez vos finances personnelles simplement et efficacement." />
+  <title>Finance Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a href="index.html" class="logo" aria-label="Finance Manager – Accueil">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="8" fill="#2563eb"/>
+          <path d="M8 22l6-8 4 5 3-4 5 7H8z" fill="#fff" opacity=".9"/>
+          <circle cx="22" cy="10" r="3" fill="#fbbf24"/>
+        </svg>
+        <span>Finance Manager</span>
+      </a>
+
+      <button
+        class="nav-toggle"
+        aria-label="Ouvrir le menu"
+        aria-expanded="false"
+        aria-controls="main-nav"
+      >
+        <span class="hamburger"></span>
+      </button>
+
+      <nav id="main-nav" class="main-nav" aria-label="Navigation principale">
+        <ul role="list">
+          <li><a href="index.html" class="nav-link active" aria-current="page">Accueil</a></li>
+          <li><a href="#features" class="nav-link">Fonctionnalités</a></li>
+          <li><a href="pages/dashboard.html" class="nav-link">Tableau de bord</a></li>
+          <li><a href="pages/depenses.html" class="nav-link">Dépenses</a></li>
+          <li><a href="pages/budget.html" class="nav-link">Budget</a></li>
+          <li><a href="pages/connexion.html" class="btn btn-nav">Connexion</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <h1 id="hero-title">Prenez le contrôle de vos finances</h1>
+          <p class="hero-desc">Suivez vos dépenses, gérez votre budget et atteignez vos objectifs financiers. Simple, rapide et sécurisé.</p>
+          <div class="hero-actions">
+            <a href="pages/connexion.html" class="btn btn-primary">Commencer gratuitement</a>
+            <a href="#features" class="btn btn-secondary">Découvrir les fonctionnalités</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-card">
+            <div class="hero-card-label">Solde total</div>
+            <div class="hero-card-amount">4 850 €</div>
+            <div class="hero-card-bar">
+              <div class="hero-card-progress" style="width: 68%"></div>
+            </div>
+            <div class="hero-card-meta">Budget mensuel utilisé à 68%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <h2 id="features-title" class="section-title">Tout ce dont vous avez besoin</h2>
+        <p class="section-desc">Des outils puissants pour gérer votre argent au quotidien.</p>
+        <div class="features-grid">
+
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <h3>Suivi des dépenses</h3>
+            <p>Enregistrez et catégorisez chaque dépense. Visualisez où va votre argent en temps réel.</p>
+            <a href="pages/depenses.html" class="feature-link">Voir les dépenses →</a>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <h3>Gestion du budget</h3>
+            <p>Définissez des budgets par catégorie et recevez des alertes avant de les dépasser.</p>
+            <a href="pages/budget.html" class="feature-link">Gérer mon budget →</a>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <h3>Tableaux de bord</h3>
+            <p>Des graphiques clairs et interactifs pour analyser vos habitudes financières.</p>
+            <a href="pages/dashboard.html" class="feature-link">Voir le tableau de bord →</a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="cta-section" aria-labelledby="cta-title">
+      <div class="container cta-inner">
+        <h2 id="cta-title">Prêt à mieux gérer votre argent ?</h2>
+        <p>Rejoignez des milliers d'utilisateurs qui contrôlent leurs finances.</p>
+        <a href="pages/connexion.html" class="btn btn-primary btn-lg">Créer mon compte</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">Finance Manager</span>
+        <p>Gérez vos finances en toute simplicité.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Navigation pied de page">
+        <ul role="list">
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="#features">Fonctionnalités</a></li>
+          <li><a href="pages/dashboard.html">Tableau de bord</a></li>
+          <li><a href="pages/connexion.html">Connexion</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="footer-year"></span> Finance Manager. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
 </html>

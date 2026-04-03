@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Connexion à Finance Manager" />
+  <title>Connexion – Finance Manager</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+
+      <a href="../index.html" class="auth-logo" aria-label="Retour à l'accueil">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="#2563eb"/>
+          <path d="M8 22l6-8 4 5 3-4 5 7H8z" fill="#fff" opacity=".9"/>
+          <circle cx="22" cy="10" r="3" fill="#fbbf24"/>
+        </svg>
+        Finance Manager
+      </a>
+
+      <div class="auth-tabs" role="tablist" aria-label="Mode d'authentification">
+        <button
+          class="auth-tab active"
+          role="tab"
+          aria-selected="true"
+          aria-controls="login"
+          data-tab="login"
+        >Connexion</button>
+        <button
+          class="auth-tab"
+          role="tab"
+          aria-selected="false"
+          aria-controls="register"
+          data-tab="register"
+        >Inscription</button>
+      </div>
+
+      <!-- Connexion -->
+      <div id="login" class="auth-panel" role="tabpanel">
+        <h1 class="auth-title">Bon retour !</h1>
+        <p class="auth-subtitle">Connectez-vous pour accéder à votre tableau de bord.</p>
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="login-email">Adresse e-mail</label>
+            <input
+              class="form-control"
+              type="email"
+              id="login-email"
+              name="email"
+              placeholder="vous@exemple.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Mot de passe</label>
+            <input
+              class="form-control"
+              type="password"
+              id="login-password"
+              name="password"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem;">
+            Se connecter
+          </button>
+        </form>
+        <p class="auth-footer">
+          Pas encore de compte ?
+          <button class="auth-tab" data-tab="register" style="background:none;border:none;color:var(--color-primary);cursor:pointer;font-weight:600;font-size:.9375rem;padding:0;">
+            S'inscrire
+          </button>
+        </p>
+      </div>
+
+      <!-- Inscription -->
+      <div id="register" class="auth-panel hidden" role="tabpanel">
+        <h1 class="auth-title">Créer un compte</h1>
+        <p class="auth-subtitle">Commencez à gérer vos finances gratuitement.</p>
+        <form id="register-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="reg-name">Prénom et nom</label>
+            <input
+              class="form-control"
+              type="text"
+              id="reg-name"
+              name="name"
+              placeholder="Jean Dupont"
+              required
+              autocomplete="name"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-email">Adresse e-mail</label>
+            <input
+              class="form-control"
+              type="email"
+              id="reg-email"
+              name="email"
+              placeholder="vous@exemple.com"
+              required
+              autocomplete="email"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Mot de passe</label>
+            <input
+              class="form-control"
+              type="password"
+              id="reg-password"
+              name="password"
+              placeholder="8 caractères minimum"
+              required
+              autocomplete="new-password"
+              minlength="8"
+            />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem;">
+            Créer mon compte
+          </button>
+        </form>
+        <p class="auth-footer">
+          Déjà un compte ?
+          <button class="auth-tab" data-tab="login" style="background:none;border:none;color:var(--color-primary);cursor:pointer;font-weight:600;font-size:.9375rem;padding:0;">
+            Se connecter
+          </button>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

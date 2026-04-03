@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Gestion des dépenses – Finance Manager" />
+  <title>Dépenses – Finance Manager</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="page-layout">
+
+  <!-- HEADER -->
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo" aria-label="Finance Manager – Accueil">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="8" fill="#2563eb"/>
+          <path d="M8 22l6-8 4 5 3-4 5 7H8z" fill="#fff" opacity=".9"/>
+          <circle cx="22" cy="10" r="3" fill="#fbbf24"/>
+        </svg>
+        <span>Finance Manager</span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-nav">
+        <span class="hamburger"></span>
+      </button>
+
+      <nav id="main-nav" class="main-nav" aria-label="Navigation principale">
+        <ul role="list">
+          <li><a href="../index.html" class="nav-link">Accueil</a></li>
+          <li><a href="dashboard.html" class="nav-link">Tableau de bord</a></li>
+          <li><a href="depenses.html" class="nav-link active" aria-current="page">Dépenses</a></li>
+          <li><a href="budget.html" class="nav-link">Budget</a></li>
+          <li><a href="connexion.html" class="btn btn-nav">Mon compte</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content" id="main-content">
+    <div class="container">
+
+      <div class="page-header">
+        <h1>Mes dépenses</h1>
+        <p>Suivez et analysez toutes vos dépenses</p>
+      </div>
+
+      <!-- Formulaire ajout -->
+      <div class="card" style="margin-bottom:1.5rem;">
+        <h2 class="card-title">Ajouter une dépense</h2>
+        <form id="expense-form" novalidate>
+          <div style="display:grid;gap:1rem;grid-template-columns:1fr;">
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="exp-desc">Description</label>
+              <input class="form-control" type="text" id="exp-desc" name="desc" placeholder="Ex : Courses supermarché" required />
+            </div>
+
+            <div style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;">
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="exp-amount">Montant (€)</label>
+                <input class="form-control" type="number" id="exp-amount" name="amount" placeholder="0.00" min="0.01" step="0.01" required />
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="exp-date">Date</label>
+                <input class="form-control" type="date" id="exp-date" name="date" required />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label" for="exp-cat">Catégorie</label>
+              <select class="form-control" id="exp-cat" name="cat" required>
+                <option value="">Choisir une catégorie</option>
+                <option value="Alimentation">Alimentation</option>
+                <option value="Transport">Transport</option>
+                <option value="Logement">Logement</option>
+                <option value="Loisirs">Loisirs</option>
+                <option value="Santé">Santé</option>
+                <option value="Habillement">Habillement</option>
+                <option value="Éducation">Éducation</option>
+                <option value="Autre">Autre</option>
+              </select>
+            </div>
+
+            <div>
+              <button type="submit" class="btn btn-primary">Ajouter la dépense</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Liste des dépenses -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h2 class="card-title" style="margin-bottom:0;">Historique</h2>
+          <span style="font-size:.875rem;color:var(--color-text-muted);">Avril 2026</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" aria-label="Liste des dépenses">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Catégorie</th>
+                <th>Montant</th>
+                <th><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="expenses-tbody">
+              <tr>
+                <td>01 avr. 2026</td>
+                <td>Courses supermarché</td>
+                <td><span class="badge badge-info">Alimentation</span></td>
+                <td style="color:var(--color-danger);font-weight:700;">-87,40 €</td>
+                <td><button class="btn btn-ghost" style="padding:.25rem .625rem;font-size:.8125rem;" onclick="this.closest('tr').remove()">Supprimer</button></td>
+              </tr>
+              <tr>
+                <td>31 mars 2026</td>
+                <td>Abonnement Netflix</td>
+                <td><span class="badge badge-info">Loisirs</span></td>
+                <td style="color:var(--color-danger);font-weight:700;">-15,99 €</td>
+                <td><button class="btn btn-ghost" style="padding:.25rem .625rem;font-size:.8125rem;" onclick="this.closest('tr').remove()">Supprimer</button></td>
+              </tr>
+              <tr>
+                <td>30 mars 2026</td>
+                <td>Loyer avril</td>
+                <td><span class="badge badge-info">Logement</span></td>
+                <td style="color:var(--color-danger);font-weight:700;">-750,00 €</td>
+                <td><button class="btn btn-ghost" style="padding:.25rem .625rem;font-size:.8125rem;" onclick="this.closest('tr').remove()">Supprimer</button></td>
+              </tr>
+              <tr>
+                <td>29 mars 2026</td>
+                <td>Restaurant Le Bistro</td>
+                <td><span class="badge badge-info">Alimentation</span></td>
+                <td style="color:var(--color-danger);font-weight:700;">-42,00 €</td>
+                <td><button class="btn btn-ghost" style="padding:.25rem .625rem;font-size:.8125rem;" onclick="this.closest('tr').remove()">Supprimer</button></td>
+              </tr>
+              <tr>
+                <td>28 mars 2026</td>
+                <td>Essence</td>
+                <td><span class="badge badge-info">Transport</span></td>
+                <td style="color:var(--color-danger);font-weight:700;">-65,00 €</td>
+                <td><button class="btn btn-ghost" style="padding:.25rem .625rem;font-size:.8125rem;" onclick="this.closest('tr').remove()">Supprimer</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">Finance Manager</span>
+        <p>Gérez vos finances en toute simplicité.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Navigation pied de page">
+        <ul role="list">
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="dashboard.html">Tableau de bord</a></li>
+          <li><a href="depenses.html">Dépenses</a></li>
+          <li><a href="budget.html">Budget</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="footer-year"></span> Finance Manager. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Initialiser la date du jour dans le formulaire
+    document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
+  </script>
+  <script src="../js/main.js"></script>
+</body>
+</html>

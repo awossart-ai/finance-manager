@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Tableau de bord – Finance Manager" />
+  <title>Tableau de bord – Finance Manager</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="page-layout">
+
+  <!-- HEADER -->
+  <header class="site-header" role="banner">
+    <div class="container header-inner">
+      <a href="../index.html" class="logo" aria-label="Finance Manager – Accueil">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true" focusable="false">
+          <rect width="32" height="32" rx="8" fill="#2563eb"/>
+          <path d="M8 22l6-8 4 5 3-4 5 7H8z" fill="#fff" opacity=".9"/>
+          <circle cx="22" cy="10" r="3" fill="#fbbf24"/>
+        </svg>
+        <span>Finance Manager</span>
+      </a>
+
+      <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="main-nav">
+        <span class="hamburger"></span>
+      </button>
+
+      <nav id="main-nav" class="main-nav" aria-label="Navigation principale">
+        <ul role="list">
+          <li><a href="../index.html" class="nav-link">Accueil</a></li>
+          <li><a href="dashboard.html" class="nav-link active" aria-current="page">Tableau de bord</a></li>
+          <li><a href="depenses.html" class="nav-link">Dépenses</a></li>
+          <li><a href="budget.html" class="nav-link">Budget</a></li>
+          <li><a href="connexion.html" class="btn btn-nav">Mon compte</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content" id="main-content">
+    <div class="container">
+
+      <div class="page-header">
+        <h1>Tableau de bord</h1>
+        <p>Vue d'ensemble de vos finances personnelles</p>
+      </div>
+
+      <!-- Statistiques -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Solde total</div>
+          <div class="stat-value">4 850,00 €</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Revenus (avril)</div>
+          <div class="stat-value positive">2 800,00 €</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Dépenses (avril)</div>
+          <div class="stat-value negative">-1 240,50 €</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Épargne (avril)</div>
+          <div class="stat-value positive">+1 559,50 €</div>
+        </div>
+      </div>
+
+      <!-- Grille contenu -->
+      <div style="display:grid;gap:1.5rem;grid-template-columns:1fr;" id="dashboard-grid">
+
+        <!-- Dernières dépenses -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h2 class="card-title" style="margin-bottom:0;">Dernières dépenses</h2>
+            <a href="depenses.html" class="btn btn-ghost" style="padding:.375rem .75rem;font-size:.875rem;">Voir tout</a>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table" aria-label="Dernières dépenses">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Catégorie</th>
+                  <th>Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>01 avr. 2026</td>
+                  <td>Courses supermarché</td>
+                  <td><span class="badge badge-info">Alimentation</span></td>
+                  <td style="color:var(--color-danger);font-weight:700;">-87,40 €</td>
+                </tr>
+                <tr>
+                  <td>31 mars 2026</td>
+                  <td>Abonnement Netflix</td>
+                  <td><span class="badge badge-info">Loisirs</span></td>
+                  <td style="color:var(--color-danger);font-weight:700;">-15,99 €</td>
+                </tr>
+                <tr>
+                  <td>30 mars 2026</td>
+                  <td>Loyer avril</td>
+                  <td><span class="badge badge-info">Logement</span></td>
+                  <td style="color:var(--color-danger);font-weight:700;">-750,00 €</td>
+                </tr>
+                <tr>
+                  <td>29 mars 2026</td>
+                  <td>Restaurant Le Bistro</td>
+                  <td><span class="badge badge-info">Alimentation</span></td>
+                  <td style="color:var(--color-danger);font-weight:700;">-42,00 €</td>
+                </tr>
+                <tr>
+                  <td>28 mars 2026</td>
+                  <td>Essence</td>
+                  <td><span class="badge badge-info">Transport</span></td>
+                  <td style="color:var(--color-danger);font-weight:700;">-65,00 €</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Budgets du mois -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+            <h2 class="card-title" style="margin-bottom:0;">Budgets du mois</h2>
+            <a href="budget.html" class="btn btn-ghost" style="padding:.375rem .75rem;font-size:.875rem;">Gérer</a>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1.25rem;">
+
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:.375rem;">
+                <span style="font-weight:600;">Alimentation</span>
+                <span style="color:var(--color-text-muted);">129 € / 300 €</span>
+              </div>
+              <div class="progress-bar"><div class="progress-bar-fill green" style="width:43%"></div></div>
+            </div>
+
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:.375rem;">
+                <span style="font-weight:600;">Transport</span>
+                <span style="color:var(--color-text-muted);">65 € / 100 €</span>
+              </div>
+              <div class="progress-bar"><div class="progress-bar-fill yellow" style="width:65%"></div></div>
+            </div>
+
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:.375rem;">
+                <span style="font-weight:600;">Loisirs</span>
+                <span style="color:var(--color-text-muted);">16 € / 80 €</span>
+              </div>
+              <div class="progress-bar"><div class="progress-bar-fill green" style="width:20%"></div></div>
+            </div>
+
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:.375rem;">
+                <span style="font-weight:600;">Logement</span>
+                <span style="color:var(--color-danger);font-weight:700;">750 € / 750 €</span>
+              </div>
+              <div class="progress-bar"><div class="progress-bar-fill red" style="width:100%"></div></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="footer-logo">Finance Manager</span>
+        <p>Gérez vos finances en toute simplicité.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Navigation pied de page">
+        <ul role="list">
+          <li><a href="../index.html">Accueil</a></li>
+          <li><a href="dashboard.html">Tableau de bord</a></li>
+          <li><a href="depenses.html">Dépenses</a></li>
+          <li><a href="budget.html">Budget</a></li>
+        </ul>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="footer-year"></span> Finance Manager. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>
