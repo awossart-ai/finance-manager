@@ -3,6 +3,10 @@
    Application styles (mobile-first)
    =========================== */
 
+/* ─── Hidden attribute fix ───────────────────────────────────── */
+/* Ensures [hidden] always wins over display properties set by class rules */
+[hidden] { display: none !important; }
+
 /* ─── App Layout ─────────────────────────────────────────────── */
 
 .app-body {
