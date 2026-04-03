@@ -680,10 +680,14 @@
   inset: 0;
   background-color: rgba(0, 0, 0, 0.45);
   z-index: 500;
-  display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--spacing-sm);
+}
+
+/* Only apply display:flex and animation when the overlay is actually open */
+.modal-overlay:not([hidden]) {
+  display: flex;
   animation: overlayIn 0.15s ease;
 }
 
@@ -700,6 +704,9 @@
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.modal-overlay:not([hidden]) .modal {
   animation: modalIn 0.2s ease;
 }
 
