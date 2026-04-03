@@ -1,0 +1,80 @@
+{
+  "name": "finance-manager",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "node electron/create-icon.cjs && npm run build && electron-builder --mac dmg"
+  },
+  "build": {
+    "appId": "com.ai.financemanager.dev",
+    "productName": "Finance Manager DEV",
+    "copyright": "Copyright © 2025",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/main.cjs",
+      "electron/preload.cjs"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "darkModeSupport": true,
+      "icon": "build/icon.icns",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "title": "Finance Manager DEV",
+      "icon": "build/icon.icns",
+      "window": {
+        "width": 540,
+        "height": 400
+      },
+      "contents": [
+        {
+          "x": 140,
+          "y": 200
+        },
+        {
+          "x": 400,
+          "y": 200,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "background": null
+    }
+  },
+  "dependencies": {
+    "date-fns": "^3.0.0",
+    "lucide-react": "^0.300.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.9.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^9.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.0",
+    "electron": "^29.0.0",
+    "electron-builder": "^24.9.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.0.0",
+    "wait-on": "^7.2.0"
+  }
+}
