@@ -164,12 +164,61 @@ function seedCategories() {
 const THEMES = ['auto', 'dark', 'light'];
 const THEME_LABELS = { auto: 'Auto', dark: 'Sombre', light: 'Clair' };
 
+function getSunTimes(lat, lon) {
+  const D2R = Math.PI / 180;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.ceil((now - start) / 86400000);
+
+  // Solar declination (degrees)
+  const decl = -23.45 * Math.cos(D2R * (360 / 365) * (dayOfYear + 10));
+
+  // Equation of time (minutes)
+  const B = D2R * (360 / 365) * (dayOfYear - 81);
+  const eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+
+  // Timezone offset in hours (positive east)
+  const tzH = -now.getTimezoneOffset() / 60;
+
+  // Solar noon in local hours
+  const solarNoon = 12 - (lon - tzH * 15) / 15 - eot / 60;
+
+  // Hour angle at sunrise/sunset (account for atmospheric refraction: 0.833°)
+  const cosHA = (Math.cos(96.833 * D2R) - Math.sin(lat * D2R) * Math.sin(decl * D2R))
+                / (Math.cos(lat * D2R) * Math.cos(decl * D2R));
+
+  if (cosHA >= 1) return null; // polar night
+  if (cosHA <= -1) return { sunrise: 0, sunset: 24 }; // midnight sun
+
+  const ha = Math.acos(cosHA) / D2R;
+  return {
+    sunrise: solarNoon - ha / 15,
+    sunset:  solarNoon + ha / 15,
+  };
+}
+
 function applyTheme(theme) {
   const body = document.body;
   body.removeAttribute('data-theme');
-  if (theme === 'dark')  body.setAttribute('data-theme', 'dark');
-  if (theme === 'light') body.setAttribute('data-theme', 'light');
-  // auto = no attribute, use CSS media query
+
+  if (theme === 'auto') {
+    const settings = getSettings();
+    if (settings.geolat != null && settings.geolon != null) {
+      const sun = getSunTimes(settings.geolat, settings.geolon);
+      if (sun) {
+        const nowH = new Date().getHours() + new Date().getMinutes() / 60;
+        const isDaytime = nowH >= sun.sunrise && nowH < sun.sunset;
+        body.setAttribute('data-theme', isDaytime ? 'light' : 'dark');
+      }
+      // If sun is null (polar night) → leave data-theme unset → CSS media query fallback
+    }
+    // No coordinates → CSS media query (prefers-color-scheme)
+  } else if (theme === 'dark') {
+    body.setAttribute('data-theme', 'dark');
+  } else if (theme === 'light') {
+    body.setAttribute('data-theme', 'light');
+  }
+
   const btn = document.querySelector('.btn--auto');
   if (btn) btn.textContent = THEME_LABELS[theme] || 'Auto';
 }
@@ -512,15 +561,17 @@ function renderDashboard(panel) {
             ${allTx.map(tx => {
               const cat = categories.find(c => c.id === tx.categoryId);
               const acc = accounts.find(a => a.id === tx.accountId);
-              const sign = tx.type === 'expense' ? '−' : '+';
-              const amtClass = tx.type === 'expense' ? 'tx-item__amount--expense' : 'tx-item__amount--income';
+              const isExpense = tx.type === 'expense';
+              const sign = isExpense ? '−' : '+';
+              const signClass = isExpense ? 'tx-sign--expense' : 'tx-sign--income';
+              const amtClass  = isExpense ? 'tx-item__amount--expense' : 'tx-item__amount--income';
               return `
                 <li class="tx-item">
                   <span class="tx-item__dot" style="background:${escHtml(cat ? cat.color : '#64748b')}" aria-hidden="true"></span>
                   <span class="tx-item__label">${escHtml(tx.label)}</span>
                   <span class="tx-item__account">${escHtml(acc ? acc.name : '—')}</span>
                   <span class="tx-item__date">${formatDate(tx.date)}</span>
-                  <span class="tx-item__amount ${amtClass}">${sign}${formatCurrency(tx.amount)}</span>
+                  <span class="tx-item__amount ${amtClass}"><span class="tx-sign ${signClass}">${sign}</span>${formatCurrency(tx.amount)}</span>
                 </li>`;
             }).join('')}
           </ul>`
@@ -704,7 +755,7 @@ function renderExpenses(panel) {
                         ? `<span class="cat-badge" style="background:${catBg};color:${escHtml(catColor)}">${escHtml(cat.name)}</span>`
                         : '<span class="text-muted">—</span>'}
                     </td>
-                    <td class="col-amount col-center">${formatCurrency(exp.amount)}</td>
+                    <td class="col-amount col-center"><span class="tx-sign tx-sign--expense">−</span>${formatCurrency(exp.amount)}</td>
                     <td class="text-muted">${formatDate(exp.date)}</td>
                     <td class="text-muted">${escHtml(acc ? acc.name : '—')}</td>
                     <td class="text-muted">
@@ -918,7 +969,7 @@ function renderIncomes(panel) {
                         ? `<span class="cat-badge" style="background:${catBg};color:${escHtml(catColor)}">${escHtml(cat.name)}</span>`
                         : '<span class="text-muted">—</span>'}
                     </td>
-                    <td class="col-amount col-amount--income col-center">+${formatCurrency(inc.amount)}</td>
+                    <td class="col-amount col-amount--income col-center"><span class="tx-sign tx-sign--income">+</span>${formatCurrency(inc.amount)}</td>
                     <td class="text-muted">${formatDate(inc.date)}</td>
                     <td class="text-muted">${escHtml(acc ? acc.name : '—')}</td>
                     <td class="text-muted">
@@ -1194,6 +1245,18 @@ const BUDGET_RECURRENCE_LABELS = {
   annual:     'Annuel',
 };
 
+// Number of months per period type
+const PERIOD_MONTHS = { month: 1, quarter: 3, semester: 6, year: 12 };
+// Months per recurrence cycle (bimonthly = 2x/month = 0.5 months/cycle)
+const RECURRENCE_MONTHS = { monthly: 1, bimonthly: 0.5, quarterly: 3, semiannual: 6, annual: 12 };
+
+function scaleBudgetForPeriod(amount, recurrence, periodType) {
+  const pMonths = PERIOD_MONTHS[periodType];
+  const rMonths = RECURRENCE_MONTHS[recurrence || 'monthly'];
+  if (!pMonths || !rMonths) return amount; // custom period or unknown: keep as-is
+  return amount * (pMonths / rMonths);
+}
+
 function renderBudgets(panel) {
   const budgets    = getBudgets();
   const categories = getCategories();
@@ -1205,6 +1268,7 @@ function renderBudgets(panel) {
     panel.dataset.periodEnd   = d.end;
   }
   const { start, end } = getPanelPeriod(panel);
+  const periodType = panel.dataset.periodType || 'month';
 
   const periodExpenses = getExpenses().filter(e => inPeriod(e.date, start, end));
 
@@ -1216,14 +1280,16 @@ function renderBudgets(panel) {
     const cat    = categories.find(c => c.id === bud.categoryId);
     const spent  = periodExpenses.filter(e => e.categoryId === bud.categoryId)
                                  .reduce((s, e) => s + e.amount, 0);
-    const pct    = bud.amount > 0 ? Math.min(100, (spent / bud.amount) * 100) : 0;
-    const remain = bud.amount - spent;
+    // Scale budget amount to match the selected period
+    const scaledAmount = scaleBudgetForPeriod(bud.amount, bud.recurrence, periodType);
+    const pct    = scaledAmount > 0 ? Math.min(100, (spent / scaledAmount) * 100) : 0;
+    const remain = scaledAmount - spent;
     const fillClass = pct >= 100 ? 'progress-bar__fill--over'
                     : pct >= 75  ? 'progress-bar__fill--warn'
                     : 'progress-bar__fill--ok';
     const catColor = cat ? cat.color : '#64748b';
 
-    totalBudget += bud.amount;
+    totalBudget += scaledAmount;
     totalSpent  += spent;
     totalRemain += remain;
 
@@ -1242,7 +1308,7 @@ function renderBudgets(panel) {
         </div>
         <div class="budget-row__stat">
           <span class="budget-row__stat-label">Budget</span>
-          <span class="budget-row__stat-value">${formatCurrency(bud.amount)}</span>
+          <span class="budget-row__stat-value">${formatCurrency(scaledAmount)}</span>
         </div>
         <div class="budget-row__stat">
           <span class="budget-row__stat-label">Dépensé</span>
@@ -1510,7 +1576,12 @@ function renderSettings(panel) {
         </div>
         <div class="form-group">
           <label for="set-password" class="form-label">Nouveau mot de passe</label>
-          <input id="set-password" name="password" type="password" class="form-input" placeholder="Laisser vide pour ne pas modifier" autocomplete="new-password">
+          <input id="set-password" name="password" type="password" class="form-input" autocomplete="new-password">
+          <small class="form-hint">Laisser vide pour conserver le mot de passe actuel</small>
+        </div>
+        <div class="form-group">
+          <label for="set-password-confirm" class="form-label">Confirmer le mot de passe</label>
+          <input id="set-password-confirm" name="passwordConfirm" type="password" class="form-input" autocomplete="new-password">
         </div>
         <div class="form-actions" style="justify-content:flex-start">
           <button type="submit" class="btn btn--primary">Enregistrer le profil</button>
@@ -1525,6 +1596,15 @@ function renderSettings(panel) {
           <button class="theme-btn${(settings.theme || 'auto') === t ? ' theme-btn--active' : ''}" data-theme="${t}">
             ${t === 'auto' ? '🌓 Auto' : t === 'dark' ? '🌙 Sombre' : '☀️ Clair'}
           </button>`).join('')}
+      </div>
+      <div class="geo-section" style="margin-top:1rem">
+        <div class="geo-section__info">
+          <div class="geo-section__label">Thème automatique par géolocalisation</div>
+          <div class="geo-section__meta">En mode Auto, utiliser le lever/coucher du soleil pour basculer clair/sombre selon votre position.${settings.geolat ? `<br>Position enregistrée : ${Number(settings.geolat).toFixed(4)}°, ${Number(settings.geolon).toFixed(4)}°` : ''}</div>
+        </div>
+        <span class="geo-status ${settings.geolat ? 'geo-status--active' : 'geo-status--inactive'}">${settings.geolat ? 'Actif' : 'Inactif'}</span>
+        <button class="btn btn--secondary btn--sm" id="btn-geo-detect">📍 Détecter ma position</button>
+        ${settings.geolat ? `<button class="btn btn--ghost btn--sm" id="btn-geo-disable">Désactiver</button>` : ''}
       </div>
     </section>
 
@@ -1618,12 +1698,23 @@ function renderSettings(panel) {
   // Profile form
   panel.querySelector('#profile-form').addEventListener('submit', e => {
     e.preventDefault();
-    const name  = e.target.name.value.trim();
-    const email = e.target.email.value.trim();
+    const name    = e.target.name.value.trim();
+    const email   = e.target.email.value.trim();
+    const pwd     = e.target.password.value;
+    const pwdConf = e.target.passwordConfirm.value;
+    if (pwd && pwd !== pwdConf) {
+      showToast('Les mots de passe ne correspondent pas.', 'error');
+      return;
+    }
     const s = getSettings();
-    saveSettings({ ...s, profile: { ...s.profile, name, email } });
+    const profile = { ...s.profile, name, email };
+    if (pwd) profile.passwordHash = btoa(pwd); // simple reversible encoding for localStorage
+    saveSettings({ ...s, profile });
     buildProfileMenu();
     showToast('Profil enregistré.', 'success');
+    // Clear password fields
+    e.target.password.value = '';
+    e.target.passwordConfirm.value = '';
   });
 
   // Theme buttons
@@ -1638,6 +1729,36 @@ function renderSettings(panel) {
       if (tBtn) tBtn.textContent = THEME_LABELS[t] || 'Auto';
     });
   });
+
+  // Geolocation
+  panel.querySelector('#btn-geo-detect').addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      showToast('La géolocalisation n\'est pas supportée par ce navigateur.', 'error');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        saveSettings({ ...getSettings(), geolat: lat, geolon: lon });
+        applyTheme(getSettings().theme || 'auto');
+        showToast('Position enregistrée. Le thème auto suit maintenant le soleil.', 'success');
+        renderSettings(panel);
+      },
+      () => showToast('Impossible d\'obtenir la position. Vérifiez les permissions.', 'error')
+    );
+  });
+
+  const btnGeoDisable = panel.querySelector('#btn-geo-disable');
+  if (btnGeoDisable) {
+    btnGeoDisable.addEventListener('click', () => {
+      const s = getSettings();
+      delete s.geolat; delete s.geolon;
+      saveSettings(s);
+      showToast('Géolocalisation désactivée.', 'success');
+      renderSettings(panel);
+    });
+  }
 
   // Settings form
   panel.querySelector('#settings-form').addEventListener('submit', e => {
